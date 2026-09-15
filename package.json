@@ -1,0 +1,94 @@
+{
+  "name": "echodeck",
+  "productName": "EchoDeck",
+  "version": "1.0.0",
+  "description": "A premium desktop soundboard for Linux.",
+  "main": "out/main/index.js",
+  "author": {
+    "name": "Meingless",
+    "email": "193384650+Meingless@users.noreply.github.com"
+  },
+  "homepage": "https://github.com/Meingless/EchoDeck",
+  "license": "MIT",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "typecheck": "tsc --noEmit",
+    "start": "electron-vite preview",
+    "dist": "electron-vite build && electron-builder --linux",
+    "dist:win": "electron-vite build && electron-builder --win -c.directories.output=release-win"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@fontsource/inter": "^5.1.1",
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^34.5.8",
+    "electron-builder": "^25.1.8",
+    "electron-vite": "^3.1.0",
+    "jsdom": "^29.1.1",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3",
+    "zustand": "^5.0.2"
+  },
+  "build": {
+    "appId": "app.echodeck.desktop",
+    "productName": "EchoDeck",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "out/**"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/demo",
+        "to": "demo"
+      },
+      {
+        "from": "resources/icon.png",
+        "to": "icon.png"
+      }
+    ],
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Audio",
+      "icon": "resources/icon.png",
+      "desktop": {
+        "StartupWMClass": "EchoDeck"
+      }
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "resources/icon.png",
+      "signAndEditExecutable": false,
+      "artifactName": "EchoDeck-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "EchoDeck-Setup-${version}.${ext}"
+    }
+  }
+}

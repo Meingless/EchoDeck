@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=EchoDeck
+GenericName=Soundboard
+Comment=Premium desktop soundboard — trigger sounds anywhere
+Exec=/home/omerkerem/Masaüstü/projects/Soundboard/node_modules/electron/dist/electron /home/omerkerem/Masaüstü/projects/Soundboard --no-sandbox --disable-gpu --ozone-platform-hint=auto --enable-features=WaylandWindowDecorations,GlobalShortcutsPortal --class=EchoDeck
+Path=/home/omerkerem/Masaüstü/projects/Soundboard
+Icon=echodeck
+Terminal=false
+Categories=Audio;AudioVideo;Utility;
+Keywords=soundboard;sounds;audio;hotkeys;
+StartupWMClass=EchoDeck
+X-KDE-DBUS-Restricted-Interfaces=org.kde.kglobalaccel.component
+StartupNotify=true
