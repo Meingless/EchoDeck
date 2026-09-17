@@ -114,7 +114,7 @@ export function TopBar() {
 
         <div className="topbar-sep" />
 
-        <button ref={devRef} className="icon-btn" onClick={openDevices} data-tip="Output device" aria-label="Output device">
+        <button ref={devRef} className="icon-btn" onClick={openDevices} data-tip="Output device" aria-label="Output device" aria-haspopup="dialog" aria-expanded={devOpen}>
           <Headphones size={17} />
         </button>
 
@@ -124,6 +124,8 @@ export function TopBar() {
           onClick={() => setVolOpen((v) => !v)}
           data-tip="Master volume"
           aria-label="Master volume"
+          aria-haspopup="dialog"
+          aria-expanded={volOpen}
         >
           <VolIcon size={17} />
         </button>

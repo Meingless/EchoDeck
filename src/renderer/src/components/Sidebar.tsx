@@ -64,7 +64,7 @@ function BoardItem({
       { label: 'Duplicate', icon: 'copy', onSelect: () => duplicateBoard(board.id) },
       { type: 'separator' },
       { label: 'Delete', icon: 'trash', danger: true, onSelect: () => setConfirmDelete(true) }
-    ])
+    ], e.currentTarget as HTMLElement)
   }
 
   if (renaming === board.id) {

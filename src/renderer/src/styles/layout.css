@@ -3,7 +3,13 @@
   grid-template-rows: var(--topbar-h) minmax(0, 1fr) var(--statusbar-h);
   grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
   height: 100%;
-  background: var(--bg-app);
+  min-width: 0;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(700px 440px at 82% -12%, var(--accent-subtle), transparent 72%),
+    var(--bg-app);
+  animation: shell-in var(--t-slow) var(--ease-out) both;
 }
 
 .topbar {
@@ -11,11 +17,24 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 14px;
-  background: var(--bg-panel);
+  gap: 14px;
+  padding: 0 16px;
+  background: var(--surface-glass);
   border-bottom: 1px solid var(--border-subtle);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.16);
   z-index: 40;
+}
+
+.topbar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: var(--sidebar-w);
+  width: min(42vw, 520px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-border), transparent);
+  opacity: 0.7;
+  pointer-events: none;
 }
 
 .topbar::after {
@@ -28,9 +47,9 @@
   background: linear-gradient(
     90deg,
     transparent,
-    hsl(var(--accent-h) var(--accent-s) var(--accent-l) / 0.18) 25%,
-    hsl(var(--accent-h) var(--accent-s) var(--accent-l) / 0.3) 50%,
-    hsl(var(--accent-h) var(--accent-s) var(--accent-l) / 0.18) 75%,
+    hsl(var(--accent-h) var(--accent-s) var(--accent-l) / 0.1) 25%,
+    hsl(var(--accent-h) var(--accent-s) var(--accent-l) / 0.28) 50%,
+    hsl(var(--accent-h) var(--accent-s) var(--accent-l) / 0.1) 75%,
     transparent
   );
   pointer-events: none;
@@ -39,27 +58,27 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 4px 6px 4px 2px;
+  gap: 10px;
+  padding: 4px 8px 4px 1px;
   flex-shrink: 0;
 }
 
 .brand-mark {
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
   display: grid;
   place-items: center;
-  background: linear-gradient(140deg, var(--accent) -20%, var(--accent-strong) 90%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 2px 10px -2px var(--accent-glow);
+  background: linear-gradient(145deg, var(--accent-hover) -18%, var(--accent-strong) 92%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 8px 24px -8px var(--accent-glow);
   color: var(--text-on-accent);
   animation: logo-breathe 3.6s var(--ease-out) infinite;
 }
 
 .brand-name {
-  font-size: 14.5px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-size: 15px;
+  font-weight: 720;
+  letter-spacing: -0.025em;
 }
 
 .brand-name span {
@@ -68,7 +87,7 @@
 
 .search-wrap {
   flex: 1;
-  max-width: 560px;
+  max-width: 600px;
   margin: 0 auto;
   position: relative;
   color: var(--text-tertiary);
@@ -76,14 +95,15 @@
 
 .search-input {
   width: 100%;
-  height: 34px;
-  background: var(--bg-inset);
+  height: 36px;
+  background: rgba(6, 8, 11, 0.68);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--r-md);
+  border-radius: 12px;
   padding: 0 74px 0 34px;
   font-size: var(--fs-base);
   color: var(--text-primary);
-  transition: border-color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.28);
+  transition: border-color var(--t-fast) var(--ease-out), background-color var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out);
 }
 
 .search-input::placeholder {
@@ -92,13 +112,15 @@
 
 .search-input:hover {
   border-color: var(--border);
+  background: rgba(10, 12, 16, 0.82);
 }
 
 .search-input:focus {
   outline: none;
   border-color: var(--accent-border);
-  box-shadow: 0 0 0 3px var(--accent-muted);
+  box-shadow: 0 0 0 3px var(--accent-muted), inset 0 1px 4px rgba(0, 0, 0, 0.22);
   background: var(--bg-input);
+  transform: translateY(-1px);
 }
 
 .search-icon {
@@ -130,35 +152,36 @@
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   flex-shrink: 0;
   margin-left: auto;
 }
 
 .topbar-sep {
   width: 1px;
-  height: 22px;
-  background: var(--border-subtle);
-  margin: 0 6px;
+  height: 20px;
+  background: linear-gradient(transparent, var(--border), transparent);
+  margin: 0 5px;
 }
 
 .stopall-btn {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  height: 32px;
+  height: 34px;
   padding: 0 12px;
   border-radius: var(--r-md);
   font-size: var(--fs-md);
   font-weight: 600;
   color: var(--text-secondary);
   border: 1px solid transparent;
-  transition: all var(--t-fast) var(--ease-out);
+  transition: background-color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out);
 }
 
 .stopall-btn:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--surface-hover);
+  border-color: var(--border-subtle);
 }
 
 .stopall-btn:active {
@@ -167,7 +190,8 @@
 
 .stopall-btn.playing {
   color: var(--text-on-accent);
-  background: var(--accent);
+  background: linear-gradient(145deg, var(--accent-hover), var(--accent));
+  border-color: transparent;
   animation: stopall-pulse 2.6s var(--ease-out) infinite;
 }
 
@@ -178,27 +202,45 @@
 .sidebar {
   grid-row: 2;
   position: relative;
-  background: var(--bg-panel);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 38%),
+    var(--bg-panel);
   border-right: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
-  padding: 12px 10px 10px;
+  padding: 14px 11px 11px;
   gap: 2px;
   overflow-y: auto;
   overflow-x: hidden;
+  box-shadow: 10px 0 34px rgba(0, 0, 0, 0.13);
+  animation: sidebar-in 420ms var(--ease-out) both;
+}
+
+.sidebar::after {
+  content: '';
+  position: absolute;
+  right: -1px;
+  top: 9%;
+  width: 1px;
+  height: 38%;
+  background: linear-gradient(transparent, var(--accent-border), transparent);
+  opacity: 0.42;
+  pointer-events: none;
 }
 
 .nav-indicator {
   position: absolute;
   top: 0;
-  left: 10px;
-  right: 10px;
-  height: 32px;
+  left: 11px;
+  right: 11px;
+  height: 34px;
   border-radius: var(--r-md);
-  background: rgba(255, 255, 255, 0.07);
+  background: linear-gradient(90deg, var(--accent-subtle), rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--border-faint);
+  box-shadow: inset 0 1px 0 var(--surface-highlight), var(--shadow-sm);
   pointer-events: none;
   z-index: 0;
-  transition: transform 0.38s var(--ease-spring), opacity var(--t-med) var(--ease-out);
+  transition: transform 0.42s var(--ease-spring), opacity var(--t-med) var(--ease-out);
 }
 
 .nav-indicator::before {
@@ -208,10 +250,10 @@
   top: 50%;
   transform: translateY(-50%);
   width: 3px;
-  height: 14px;
+  height: 16px;
   border-radius: 3px;
   background: var(--accent);
-  box-shadow: 0 0 8px -1px var(--accent-glow);
+  box-shadow: 0 0 12px var(--accent-glow);
 }
 
 .nav-indicator::after {
@@ -225,15 +267,15 @@
 .nav-section {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  margin-bottom: 6px;
+  gap: 2px;
+  margin-bottom: 8px;
 }
 
 .nav-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 10px 6px 14px;
+  padding: 9px 10px 7px 14px;
 }
 
 .nav-add {
@@ -244,7 +286,7 @@
   place-items: center;
   color: var(--text-tertiary);
   opacity: 0;
-  transition: opacity var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+  transition: opacity var(--t-fast) var(--ease-out), background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out);
 }
 
 .nav-section:hover .nav-add,
@@ -255,6 +297,7 @@
 .nav-add:hover {
   background: rgba(255, 255, 255, 0.07);
   color: var(--text-primary);
+  transform: rotate(90deg);
 }
 
 .nav-item {
@@ -262,7 +305,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 32px;
+  height: 34px;
   padding: 0 10px 0 13px;
   border-radius: var(--r-md);
   font-size: var(--fs-base);
@@ -270,18 +313,20 @@
   color: var(--text-secondary);
   width: 100%;
   text-align: left;
-  transition: background var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+  transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out);
   white-space: nowrap;
 }
 
 .nav-item:hover {
   background: rgba(255, 255, 255, 0.045);
   color: var(--text-primary);
+  transform: translateX(2px);
 }
 
 .nav-item.active {
   color: var(--text-primary);
   font-weight: 600;
+  transform: translateX(1px);
 }
 
 .nav-item svg {
@@ -309,7 +354,12 @@
 .nav-count {
   font-size: var(--fs-sm);
   font-weight: 500;
-  color: var(--text-faint);
+  color: var(--text-tertiary);
+  background: rgba(255, 255, 255, 0.035);
+  border-radius: var(--r-full);
+  min-width: 20px;
+  padding: 1px 6px;
+  text-align: center;
   font-variant-numeric: tabular-nums;
 }
 
@@ -323,10 +373,18 @@
   padding: 0 6px;
   font-size: var(--fs-base);
   color: var(--text-primary);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 
 .nav-rename-input:focus {
   outline: none;
+}
+
+.nav-rename-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-color: var(--accent-border);
+  box-shadow: 0 0 0 3px var(--accent-muted);
 }
 
 .sidebar-spacer {
@@ -344,17 +402,32 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  isolation: isolate;
   background:
-    radial-gradient(1000px 380px at 50% -180px, rgba(255, 255, 255, 0.025), transparent 70%),
+    radial-gradient(1000px 420px at 52% -210px, rgba(255, 255, 255, 0.045), transparent 70%),
+    radial-gradient(680px 520px at 100% 15%, var(--accent-subtle), transparent 76%),
     var(--bg-main);
 }
 
+.main::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(var(--border-faint) 1px, transparent 1px), linear-gradient(90deg, var(--border-faint) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(circle at 82% 4%, black, transparent 57%);
+  opacity: 0.18;
+  pointer-events: none;
+}
+
 .main-header {
-  padding: 22px 26px 10px;
+  position: relative;
+  padding: 24px 28px 12px;
   display: flex;
   flex-direction: column;
   gap: 14px;
   flex-shrink: 0;
+  animation: header-in 460ms 70ms var(--ease-out) both;
 }
 
 .main-header-top {
@@ -364,9 +437,9 @@
 }
 
 .main-title {
-  font-size: var(--fs-2xl);
-  font-weight: 650;
-  letter-spacing: -0.02em;
+  font-size: 21px;
+  font-weight: 680;
+  letter-spacing: -0.035em;
   line-height: 1.2;
 }
 
@@ -374,7 +447,7 @@
   font-size: var(--fs-md);
   font-weight: 500;
   color: var(--text-tertiary);
-  margin-top: 4px;
+  margin-top: 5px;
 }
 
 .main-header-actions {
@@ -386,20 +459,21 @@
 .main-filters {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
 }
 
 .grid-scroll {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 6px 26px 30px;
+  position: relative;
+  padding: 7px 28px 32px;
 }
 
 .sound-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
-  gap: 12px;
+  gap: 14px;
 }
 
 @media (min-width: 2200px) {
@@ -412,13 +486,15 @@
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 0 14px;
-  background: var(--bg-panel);
+  gap: 14px;
+  padding: 0 16px;
+  background: linear-gradient(180deg, rgba(11, 13, 17, 0.96), rgba(8, 10, 13, 0.98));
   border-top: 1px solid var(--border-subtle);
   font-size: var(--fs-sm);
   color: var(--text-tertiary);
   z-index: 40;
+  box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.12);
+  animation: status-in 420ms 100ms var(--ease-out) both;
 }
 
 .statusbar .dot {
@@ -426,6 +502,7 @@
   height: 3px;
   border-radius: 50%;
   background: var(--text-faint);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.025);
 }
 
 .statusbar-right {
@@ -443,4 +520,46 @@
 .statusbar .playing-count {
   color: var(--accent-dimmed-text);
   font-weight: 600;
+}
+
+@keyframes shell-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sidebar-in {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes header-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes status-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

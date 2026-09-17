@@ -4,11 +4,36 @@ import { ICONS } from './icons'
 import type { MenuItem } from '@/lib/types'
 import { Check } from 'lucide-react'
 
-function MenuList({ items, x, y, depth = 0 }: { items: MenuItem[]; x: number; y: number; depth?: number }) {
+function MenuList({
+  items,
+  x,
+  y,
+  depth = 0,
+  onCloseSub
+}: {
+  items: MenuItem[]
+  x: number
+  y: number
+  depth?: number
+  onCloseSub?: () => void
+}) {
   const closeMenu = useStore((s) => s.closeMenu)
   const ref = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState({ x, y })
   const [sub, setSub] = useState<{ x: number; y: number; items: MenuItem[] } | null>(null)
+  const submenuTriggerRef = useRef<HTMLButtonElement | null>(null)
+  const itemButtonRefs = useRef<Record<number, HTMLButtonElement | null>>({})
+
+  const openSubmenu = (button: HTMLButtonElement, children: MenuItem[]) => {
+    submenuTriggerRef.current = button
+    const r = button.getBoundingClientRect()
+    setSub({ x: r.right + 4, y: r.top - 5, items: children })
+  }
+
+  useEffect(() => {
+    const first = ref.current?.querySelector<HTMLButtonElement>('[role^="menuitem"]:not([disabled])')
+    first?.focus()
+  }, [depth])
 
   useLayoutEffect(() => {
     const el = ref.current
@@ -25,30 +50,70 @@ function MenuList({ items, x, y, depth = 0 }: { items: MenuItem[]; x: number; y:
 
   return (
     <>
-      <div className="ctx-menu" style={{ left: pos.x, top: pos.y }} role="menu" ref={ref}>
+      <div className="ctx-menu" style={{ left: pos.x, top: pos.y }} role="menu" aria-label="Context menu" ref={ref}>
         {items.map((item, i) =>
           item.type === 'separator' ? (
-            <div key={i} className="ctx-sep" />
+            <div key={i} className="ctx-sep" role="separator" />
           ) : (
             <button
               key={i}
+              ref={(el) => {
+                itemButtonRefs.current[i] = el
+              }}
               className={`ctx-item${item.danger ? ' danger' : ''}${item.disabled ? ' disabled' : ''}${
                 item.checked ? ' has-check' : ''
               }`}
-              role="menuitem"
+              tabIndex={item.disabled ? -1 : 0}
+              disabled={item.disabled}
+              aria-haspopup={item.children ? 'menu' : undefined}
+              aria-expanded={item.children ? sub?.items === item.children : undefined}
+              onKeyDown={(e) => {
+                const menu = e.currentTarget.parentElement
+                if (!menu) return
+                const enabled = Array.from(menu.querySelectorAll<HTMLButtonElement>('[role^="menuitem"]:not([disabled])'))
+                const index = enabled.indexOf(e.currentTarget)
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Home' || e.key === 'End') {
+                  e.preventDefault()
+                  const next = e.key === 'Home'
+                    ? 0
+                    : e.key === 'End'
+                      ? enabled.length - 1
+                      : (index + (e.key === 'ArrowDown' ? 1 : -1) + enabled.length) % enabled.length
+                  enabled[next]?.focus()
+                } else if (e.key === 'ArrowLeft' && depth > 0) {
+                  e.preventDefault()
+                  onCloseSub?.()
+                } else if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  if (item.children) {
+                    openSubmenu(e.currentTarget, item.children)
+                  } else {
+                    closeMenu()
+                    item.onSelect?.()
+                  }
+                } else if (e.key === 'ArrowRight' && item.children) {
+                  e.preventDefault()
+                  openSubmenu(e.currentTarget, item.children)
+                }
+              }}
               onMouseEnter={(e) => {
                 if (item.children) {
-                  const r = e.currentTarget.getBoundingClientRect()
-                  setSub({ x: r.right + 4, y: r.top - 5, items: item.children })
+                  openSubmenu(e.currentTarget, item.children)
                 } else {
                   setSub(null)
                 }
               }}
               onClick={() => {
-                if (item.children) return
+                if (item.children) {
+                  const trigger = itemButtonRefs.current[i]
+                  if (trigger) openSubmenu(trigger, item.children)
+                  return
+                }
                 closeMenu()
                 item.onSelect?.()
               }}
+              role={item.checked !== undefined ? 'menuitemradio' : 'menuitem'}
+              aria-checked={item.checked === undefined ? undefined : item.checked}
             >
               {item.checked && (
                 <span className="ctx-check">
@@ -75,7 +140,18 @@ function MenuList({ items, x, y, depth = 0 }: { items: MenuItem[]; x: number; y:
           )
         )}
       </div>
-      {sub && <MenuList items={sub.items} x={sub.x} y={sub.y} depth={depth + 1} />}
+      {sub && (
+        <MenuList
+          items={sub.items}
+          x={sub.x}
+          y={sub.y}
+          depth={depth + 1}
+          onCloseSub={() => {
+            setSub(null)
+            submenuTriggerRef.current?.focus()
+          }}
+        />
+      )}
     </>
   )
 }
@@ -86,6 +162,7 @@ export function ContextMenuLayer() {
 
   useEffect(() => {
     if (!menu) return
+    const invoker = menu.invoker ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null)
     const close = (e: Event) => {
       if ((e.target as Element | null)?.closest?.('.ctx-menu')) return
       closeMenu()
@@ -102,6 +179,7 @@ export function ContextMenuLayer() {
       window.removeEventListener('blur', close)
       window.removeEventListener('keydown', onKey)
       window.removeEventListener('resize', close)
+      if (invoker?.isConnected) invoker.focus()
     }
   }, [menu, closeMenu])
 

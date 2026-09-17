@@ -1,8 +1,8 @@
 {
   "name": "echodeck",
   "productName": "EchoDeck",
-  "version": "1.0.0",
-  "description": "A premium desktop soundboard for Linux.",
+  "version": "1.1.0",
+  "description": "A premium desktop soundboard for Linux and Windows.",
   "main": "out/main/index.js",
   "author": {
     "name": "Meingless",

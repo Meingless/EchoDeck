@@ -19,12 +19,48 @@ export function CommandPalette() {
   const [sel, setSel] = useState(0)
   const listRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const paletteRef = useRef<HTMLDivElement>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
-    if (open) {
-      setQuery('')
-      setSel(0)
-      setTimeout(() => inputRef.current?.focus(), 20)
+    if (!open) return
+    previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    setQuery('')
+    setSel(0)
+    const focusTimer = window.setTimeout(() => inputRef.current?.focus(), 20)
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        e.stopPropagation()
+        setPalette(false)
+        return
+      }
+      if (e.key !== 'Tab' || !paletteRef.current) return
+      const focusable = Array.from(
+        paletteRef.current.querySelectorAll<HTMLElement>(
+          'input:not([disabled]):not([hidden]), button:not([disabled]):not([hidden]), [tabindex]:not([tabindex="-1"]):not([hidden])'
+        )
+      )
+      if (!focusable.length) return
+      const activeIndex = focusable.indexOf(document.activeElement as HTMLElement)
+      if (activeIndex === -1) {
+        e.preventDefault()
+        focusable[e.shiftKey ? focusable.length - 1 : 0].focus()
+      } else if (e.shiftKey && activeIndex === 0) {
+        e.preventDefault()
+        focusable[focusable.length - 1].focus()
+      } else if (!e.shiftKey && activeIndex === focusable.length - 1) {
+        e.preventDefault()
+        focusable[0].focus()
+      }
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => {
+      window.removeEventListener('keydown', onKey, true)
+      window.clearTimeout(focusTimer)
+      const previousFocus = previousFocusRef.current
+      if (previousFocus?.isConnected) previousFocus.focus()
     }
   }, [open])
 
@@ -98,7 +134,7 @@ export function CommandPalette() {
 
   return (
     <div className="palette-overlay" onPointerDown={(e) => e.target === e.currentTarget && setPalette(false)}>
-      <div className="palette" role="dialog" aria-label="Command palette">
+      <div ref={paletteRef} className="palette" role="dialog" aria-modal="true" aria-label="Command palette">
         <div className="palette-input-wrap">
           <ICONS.command size={16} />
           <input
@@ -123,14 +159,22 @@ export function CommandPalette() {
               }
             }}
             aria-label="Command palette input"
+            role="combobox"
+            aria-controls="command-palette-list"
+            aria-expanded="true"
+            aria-autocomplete="list"
+            aria-activedescendant={filtered[sel] ? `palette-option-${filtered[sel].id}` : undefined}
           />
           <kbd>Esc</kbd>
         </div>
-        <div className="palette-list" ref={listRef}>
+        <div className="palette-list" id="command-palette-list" ref={listRef} role="listbox" aria-label="Commands">
           {filtered.map((e, i) => (
             <button
               key={e.id}
+              id={`palette-option-${e.id}`}
               className={`palette-item${i === sel ? ' selected' : ''}`}
+              role="option"
+              aria-selected={i === sel}
               onMouseEnter={() => setSel(i)}
               onClick={() => runEntry(e)}
             >

@@ -24,20 +24,14 @@ export function AddSoundModal() {
     setBusy(false)
   }
 
-  const browse = async () => {
-    const paths = await window.api.openFiles()
-    if (paths?.length) {
-      setBusy(true)
-      const count = await importPaths(paths)
-      setBusy(false)
-      if (count > 0) setAddOpen(false)
-    }
-  }
-
   return (
     <Modal title="Add Sounds" onClose={() => setAddOpen(false)} width={480}>
       <div
         className={`dropzone${over ? ' over' : ''}`}
+        onClick={(e) => {
+          if ((e.target as HTMLElement).closest('button')) return
+          inputRef.current?.click()
+        }}
         onDragOver={(e) => {
           e.preventDefault()
           setOver(true)
@@ -49,8 +43,6 @@ export function AddSoundModal() {
           setOver(false)
           void handleFiles(e.dataTransfer.files)
         }}
-        onClick={() => inputRef.current?.click()}
-        role="button"
         aria-label="Drop audio files here or browse"
       >
         <div className="dropzone-icon">
@@ -58,7 +50,7 @@ export function AddSoundModal() {
         </div>
         <div className="dropzone-title">{busy ? 'Importing…' : 'Drop audio files here'}</div>
         <div className="dropzone-hint">or</div>
-        <button className="btn" onClick={(e) => { e.stopPropagation(); void browse() }} style={{ marginTop: 6 }}>
+        <button type="button" className="btn" onClick={() => inputRef.current?.click()} style={{ marginTop: 6 }}>
           Browse Files
         </button>
         <div className="dropzone-formats">MP3 · WAV · OGG · FLAC</div>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Play, Square, Star, MoreHorizontal, Repeat } from 'lucide-react'
 import { useStore } from '@/store/store'
 import { usePlayer } from '@/store/player'
@@ -20,6 +20,7 @@ export function SoundCard({ sound, index }: { sound: Sound; index: number }) {
   const updateSound = useStore((s) => s.updateSound)
   const showHotkeys = useStore((s) => s.settings.showHotkeys)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const mainActionRef = useRef<HTMLDivElement>(null)
 
   const openCardMenu = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -51,23 +52,16 @@ export function SoundCard({ sound, index }: { sound: Sound; index: number }) {
       { label: 'Duplicate', icon: 'copy', onSelect: () => duplicate(sound.id) },
       { label: 'Show in Folder', icon: 'folder-output', onSelect: () => window.api.revealSound(sound.fileName) },
       { label: 'Delete', icon: 'trash', danger: true, onSelect: () => setConfirmDelete(true) }
-    ])
+    ], mainActionRef.current ?? (e.currentTarget as HTMLElement))
   }
 
   return (
     <div
       className={`sound-card${playing ? ' playing' : ''}`}
-      tabIndex={0}
-      data-index={index}
+      style={{ '--i': index } as React.CSSProperties}
+      role="group"
       aria-label={`${sound.name}, ${fmtDuration(sound.duration)}`}
       onClick={() => toggle(sound.id)}
-      onKeyDown={(e) => {
-        if (e.target !== e.currentTarget) return
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          toggle(sound.id)
-        }
-      }}
       onContextMenu={openCardMenu}
       draggable
       onDragStart={(e) => {
@@ -75,35 +69,57 @@ export function SoundCard({ sound, index }: { sound: Sound; index: number }) {
         e.dataTransfer.effectAllowed = 'move'
       }}
     >
-      <div className="card-top" onClick={(e) => e.stopPropagation()}>
-        <span className="card-name" title={sound.name}>
-          {sound.name}
-        </span>
-        {playing && (
-          <span className="card-playing-pill">
-            <span className="card-playing-dot" />
-            PLAYING
-          </span>
-        )}
-        <button
-          className={`card-fav${sound.favorite ? ' on' : ''}`}
-          onClick={() => toggleFavorite(sound.id)}
-          aria-label={sound.favorite ? 'Remove from favorites' : 'Add to favorites'}
-          data-tip={sound.favorite ? 'Unfavorite' : 'Favorite'}
+      <div className="card-main-row">
+        <div
+          className="card-main-action"
+          ref={mainActionRef}
+          role="button"
+          tabIndex={0}
+          data-index={index}
+          aria-label={playing ? `Stop ${sound.name}` : `Play ${sound.name}`}
+          onClick={(e) => {
+            e.stopPropagation()
+            toggle(sound.id)
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              toggle(sound.id)
+            }
+          }}
         >
-          <Star size={14.5} fill={sound.favorite ? 'currentColor' : 'none'} />
-        </button>
-        <button
-          className="card-more"
-          onClick={openCardMenu}
-          aria-label={`Options for ${sound.name}`}
-          data-tip="Options"
-        >
-          <MoreHorizontal size={16} />
-        </button>
+          <div className="card-top">
+            <span className="card-name" title={sound.name}>
+              {sound.name}
+            </span>
+            {playing && (
+              <span className="card-playing-pill">
+                <span className="card-playing-dot" />
+                PLAYING
+              </span>
+            )}
+          </div>
+          <Waveform sound={sound} />
+        </div>
+        <div className="card-controls" onClick={(e) => e.stopPropagation()}>
+          <button
+            className={`card-fav${sound.favorite ? ' on' : ''}`}
+            onClick={() => toggleFavorite(sound.id)}
+            aria-label={sound.favorite ? 'Remove from favorites' : 'Add to favorites'}
+            data-tip={sound.favorite ? 'Unfavorite' : 'Favorite'}
+          >
+            <Star size={14.5} fill={sound.favorite ? 'currentColor' : 'none'} />
+          </button>
+          <button
+            className="card-more"
+            onClick={openCardMenu}
+            aria-label={`Options for ${sound.name}`}
+            data-tip="Options"
+          >
+            <MoreHorizontal size={16} />
+          </button>
+        </div>
       </div>
-
-      <Waveform sound={sound} />
 
       <div className="card-footer" onClick={(e) => e.stopPropagation()}>
         <button

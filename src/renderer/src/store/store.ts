@@ -15,7 +15,7 @@ const BUILT_IN_BOARDS: Soundboard[] = [
   { id: 'sb-scp', name: 'SCP' }
 ]
 
-type MenuState = { x: number; y: number; items: MenuItem[] } | null
+type MenuState = { x: number; y: number; items: MenuItem[]; invoker?: HTMLElement } | null
 
 type Store = {
   loaded: boolean
@@ -47,7 +47,7 @@ type Store = {
   closeSettings: () => void
   setPalette: (open: boolean) => void
   setAddOpen: (open: boolean) => void
-  openMenu: (x: number, y: number, items: MenuItem[]) => void
+  openMenu: (x: number, y: number, items: MenuItem[], invoker?: HTMLElement) => void
   closeMenu: () => void
 
   toast: (kind: ToastKind, title: string, message?: string) => void
@@ -276,19 +276,19 @@ export const useStore = create<Store>((set, get) => ({
     set({ editingId: id })
   },
   openSettings(tab = 'general') {
-    set({ settingsOpen: true, settingsTab: tab, paletteOpen: false })
+    set({ settingsOpen: true, settingsTab: tab, paletteOpen: false, addOpen: false })
   },
   closeSettings() {
     set({ settingsOpen: false })
   },
   setPalette(open) {
-    set({ paletteOpen: open })
+    set(open ? { paletteOpen: true, settingsOpen: false, addOpen: false } : { paletteOpen: false })
   },
   setAddOpen(open) {
-    set({ addOpen: open })
+    set(open ? { addOpen: true, settingsOpen: false, paletteOpen: false } : { addOpen: false })
   },
-  openMenu(x, y, items) {
-    set({ menu: { x, y, items } })
+  openMenu(x, y, items, invoker) {
+    set({ menu: { x, y, items, invoker } })
   },
   closeMenu() {
     set({ menu: null })

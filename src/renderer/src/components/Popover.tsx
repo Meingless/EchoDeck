@@ -15,6 +15,9 @@ export function Popover({
   width?: number
 }) {
   const ref = useRef<HTMLDivElement>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
   const [pos, setPos] = useState({ x: -1000, y: -1000 })
 
   useLayoutEffect(() => {
@@ -29,22 +32,29 @@ export function Popover({
   }, [anchor, align])
 
   useEffect(() => {
+    previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const initialFocus = ref.current?.querySelector<HTMLElement>(
+      'button:not([disabled]):not([hidden]), input:not([disabled]):not([hidden]), select:not([disabled]):not([hidden]), [tabindex]:not([tabindex="-1"]):not([hidden])'
+    )
+    initialFocus?.focus()
     const close = (e: PointerEvent) => {
-      if (!ref.current?.contains(e.target as Node) && !anchor?.contains(e.target as Node)) onClose()
+      if (!ref.current?.contains(e.target as Node) && !anchor?.contains(e.target as Node)) onCloseRef.current()
     }
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') onCloseRef.current()
     }
     window.addEventListener('pointerdown', close, true)
     window.addEventListener('keydown', onKey)
     return () => {
       window.removeEventListener('pointerdown', close, true)
       window.removeEventListener('keydown', onKey)
+      const previousFocus = previousFocusRef.current
+      if (previousFocus?.isConnected) previousFocus.focus()
     }
-  }, [onClose, anchor])
+  }, [anchor])
 
   return (
-    <div ref={ref} className="popover" style={{ left: pos.x, top: pos.y, ...(width ? { width } : {}) }}>
+    <div ref={ref} className="popover" role="dialog" aria-label="Popover" tabIndex={-1} style={{ left: pos.x, top: pos.y, ...(width ? { width } : {}) }}>
       {children}
     </div>
   )

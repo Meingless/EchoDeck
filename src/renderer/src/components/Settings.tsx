@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { useStore, type SettingsTab } from '@/store/store'
 import { ACCENTS } from '@/lib/accents'
 import { HotkeyCapture } from './HotkeyCapture'
@@ -653,22 +653,62 @@ export function SettingsOverlay() {
   const tab = useStore((s) => s.settingsTab)
   const openSettings = useStore((s) => s.openSettings)
   const closeSettings = useStore((s) => s.closeSettings)
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
+  const titleId = useId()
 
   useEffect(() => {
     if (!open) return
+    previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const initialFocus = overlayRef.current?.querySelector<HTMLElement>('.settings-nav .nav-item.active')
+      ?? overlayRef.current?.querySelector<HTMLElement>('button:not([disabled]):not([hidden])')
+    initialFocus?.focus()
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeSettings()
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        e.stopPropagation()
+        closeSettings()
+        return
+      }
+      if (e.key !== 'Tab' || !overlayRef.current) return
+      const focusable = Array.from(
+        overlayRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]):not([hidden]), input:not([disabled]):not([hidden]):not([type="hidden"]), select:not([disabled]):not([hidden]), textarea:not([disabled]):not([hidden]), a[href]:not([hidden]), [tabindex]:not([tabindex="-1"]):not([hidden])'
+        )
+      )
+      if (!focusable.length) {
+        e.preventDefault()
+        overlayRef.current.focus()
+        return
+      }
+      const activeIndex = focusable.indexOf(document.activeElement as HTMLElement)
+      if (activeIndex === -1) {
+        e.preventDefault()
+        focusable[e.shiftKey ? focusable.length - 1 : 0].focus()
+      } else if (e.shiftKey && activeIndex === 0) {
+        e.preventDefault()
+        focusable[focusable.length - 1].focus()
+      } else if (!e.shiftKey && activeIndex === focusable.length - 1) {
+        e.preventDefault()
+        focusable[0].focus()
+      }
     }
+    // Keep this listener at the bubbling phase so a focused HotkeyCapture can
+    // consume Escape before the settings shell closes.
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      const previousFocus = previousFocusRef.current
+      if (previousFocus?.isConnected) previousFocus.focus()
+    }
   }, [open, closeSettings])
 
   if (!open) return null
 
   return (
-    <div className="settings-overlay">
-      <nav className="settings-nav">
-        <div className="settings-title">Settings</div>
+    <div ref={overlayRef} className="settings-overlay" role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1}>
+      <nav className="settings-nav" aria-label="Settings sections">
+        <div className="settings-title" id={titleId}>Settings</div>
         {TABS.map((t) => (
           <button key={t.id} className={`nav-item${tab === t.id ? ' active' : ''}`} onClick={() => openSettings(t.id)}>
             <t.icon size={15.5} />

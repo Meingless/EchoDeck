@@ -180,9 +180,7 @@ export function App() {
         <MainHeader />
         <SoundGrid />
         <EditorPanel />
-        <SettingsOverlay />
         <PlaybackBar />
-        <CommandPalette />
         {dragDepth > 0 && (
           <div className="dnd-overlay">
             <div className="dnd-inner">
@@ -192,6 +190,8 @@ export function App() {
           </div>
         )}
       </main>
+      <SettingsOverlay />
+      <CommandPalette />
       <StatusBar />
       <ContextMenuLayer />
       <AddSoundModal />

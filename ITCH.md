@@ -12,7 +12,7 @@ Produces `release/EchoDeck-<version>.AppImage` (and a `.deb`) for Linux, and
 NSIS tooling is available) for Windows. Verify before uploading:
 
 ```bash
-release/EchoDeck-1.0.0.AppImage --appimage-extract   # then:
+release/EchoDeck-1.1.0.AppImage --appimage-extract   # then:
 APPDIR=$PWD/squashfs-root ./squashfs-root/AppRun     # needs APPDIR when run extracted
 ```
 
@@ -23,8 +23,8 @@ and confirm `EchoDeck.exe` + `resources/demo/` are present.
 ## Upload (butler)
 
 ```bash
-butler push release/EchoDeck-1.0.0.AppImage <your-user>/echodeck:linux --userversion 1.0.0
-butler push release-win/EchoDeck-1.0.0-x64.zip <your-user>/echodeck:windows --userversion 1.0.0
+butler push release/EchoDeck-1.1.0.AppImage <your-user>/echodeck:linux --userversion 1.1.0
+butler push release-win/EchoDeck-1.1.0-x64.zip <your-user>/echodeck:windows --userversion 1.1.0
 ```
 
 Butler handles delta patches, so subsequent versions are cheap uploads. Bump
